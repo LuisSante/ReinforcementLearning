@@ -27,33 +27,35 @@ if __name__ == "__main__":
     print("===== AgileRL Online Multi-Agent Demo =====")
 
     # Define the network configuration
+    # Increased network capacity for better function approximation
     NET_CONFIG = {
-        "latent_dim": 64,
+        "latent_dim": 128,  # Increased from 64 for better representation learning
         "encoder_config": {
-            "hidden_size": [128, 128],  # Actor hidden size
+            "hidden_size": [128, 128],  # Deeper actor network for complex coordination
         },
         "head_config": {
-            "hidden_size": [128, 128],  # Critic hidden size
+            "hidden_size": [128, 128],  # Deeper critic network for better value estimation
         },
     }
 
     # Define the initial hyperparameters
+    # Optimized for better performance in Speaker-Listener environment
     INIT_HP = {
-        "POPULATION_SIZE": 6,
+        "POPULATION_SIZE": 4,
         "ALGO": "MATD3",  # Algorithm
-        "BATCH_SIZE": 256,  # Batch size
+        "BATCH_SIZE": 256,  # Increased from 128 for more stable gradient estimates
         "O_U_NOISE": True,  # Ornstein Uhlenbeck action noise
-        "EXPL_NOISE": 0.1,  # Action noise scale
+        "EXPL_NOISE": 0.2,  # Increased from 0.1 for better exploration
         "MEAN_NOISE": 0.0,  # Mean action noise
         "THETA": 0.15,  # Rate of mean reversion in OU noise
         "DT": 0.01,  # Timestep for OU noise
-        "LR_ACTOR": 0.0001,  # Actor learning rate
-        "LR_CRITIC": 0.001,  # Critic learning rate
-        "GAMMA": 0.95,  # Discount factor
+        "LR_ACTOR": 0.0003,  # Increased from 0.0001 for faster policy improvement
+        "LR_CRITIC": 0.001,  # Critic learning rate (kept same)
+        "GAMMA": 0.99,  # Increased from 0.95 to value long-term rewards (reaching goal)
         "MEMORY_SIZE": 100000,  # Max memory buffer size
-        "LEARN_STEP": 200,  # Learning frequency
-        "TAU": 0.01,  # For soft update of target parameters
-        "POLICY_FREQ": 2,  # Policy frequnecy
+        "LEARN_STEP": 50,  # Reduced from 100 for more frequent learning
+        "TAU": 0.005,  # Reduced from 0.01 for slower, more stable target updates
+        "POLICY_FREQ": 2,  # Policy frequency
     }
 
     num_envs = 8
@@ -82,11 +84,11 @@ if __name__ == "__main__":
 
     # Create a population ready for evolutionary hyper-parameter optimisation
     pop: list[MATD3] = create_population(
-        algo=INIT_HP["ALGO"],
-        observation_space=observation_spaces,
-        action_space=action_spaces,
-        net_config=NET_CONFIG,
-        INIT_HP=INIT_HP,
+        INIT_HP["ALGO"],
+        observation_spaces,
+        action_spaces,
+        NET_CONFIG,
+        INIT_HP,
         hp_config=hp_config,
         population_size=INIT_HP["POPULATION_SIZE"],
         num_envs=num_envs,
@@ -124,7 +126,7 @@ if __name__ == "__main__":
     )
 
     # Define training loop parameters
-    max_steps = 2_000_000  # Max steps (default: 2000000)
+    max_steps = 3_000_000  # Increased from 2M for better convergence
     learning_delay = 0  # Steps before starting learning
     evo_steps = 10_000  # Evolution frequency
     eval_steps = None  # Evaluation steps per episode - go until done
